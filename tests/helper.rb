@@ -46,6 +46,7 @@ all_providers = all_providers - ["libvirt", "vmfusion", "openvz"]
 
 available_providers = Fog.available_providers.map {|provider| provider.downcase}
 
+
 unavailable_providers = all_providers - available_providers
 
 if !ENV['PROVIDER'].nil? && unavailable_providers.include?(ENV['PROVIDER'])

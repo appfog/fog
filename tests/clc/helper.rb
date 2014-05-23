@@ -1,56 +1,53 @@
 
-# Shortcut for Fog::Compute[:digitalocean]
-def service
-  Fog::Compute[:digitalocean]
+# Shortcut for Fog::Compute[:clc]
+def clc_service
+  Fog::Compute[:clc]
 end
 
-def fog_test_server_attributes
+def clc_set_test_server_attributes
   # Hard coding numbers because requests from tests are sometimes failing.
   # TODO: Mock properly instead
-  image = service.images.find { |i| i.name == 'Ubuntu 13.10 x64' }
-  image_id = image.nil? ? 1505447 : image.id
-  region = service.regions.find { |r| r.name == 'New York 1' }
-  region_id = region.nil? ? 4 : region.id
-  flavor = service.flavors.find { |r| r.name == '512MB' }
-  flavor_id = flavor.nil? ? 66 : flavor.id
-
   {
-    :image_id  => image_id,
-    :region_id => region_id,
-    :flavor_id => flavor_id
+    :cpu_count => 2,
+    :gb_memory => 8,
+    :description  => 'Mock Test Server',
+    :hardware_group_id => 24601,
+    :server_type => 1,
+    :service_level => 2,
+    :template => 'NOT-WINDOWS'
   }
 end
 
-def fog_server_name
-  "fog-server-test"
+def clc_server_name
+  "clc-server-test2222"
 end
 
 # Create a long lived server for the tests
-def fog_test_server
-  server = service.servers.find { |s| s.name == fog_server_name }
+def clc_test_server
+  server = clc_service.servers.find { |s| s.name == clc_server_name }
   unless server
-    server = service.servers.create({
-      :name => fog_server_name
-    }.merge(fog_test_server_attributes))
+    server = clc_service.servers.create({
+      :name => clc_server_name
+    }.merge(clc_set_test_server_attributes))
     server.wait_for { ready? }
   end
   server
 end
 
 # Destroy the long lived server
-def fog_test_server_destroy
-  server = service.servers.find { |s| s.name == fog_server_name }
+def clc_test_server_destroy
+  server = clc_service.servers.find { |s| s.name == clc_server_name }
   server.destroy if server
 end
 
 at_exit do
-  unless Fog.mocking? || Fog.credentials[:digitalocean_api_key].nil?
-    server = service.servers.find { |s| s.name == fog_server_name }
+  unless Fog.mocking? || Fog.credentials[:clc_api_key].nil?
+    server = clc_service.servers.find { |s| s.name == clc_server_name }
     if server
       server.wait_for(120) do
         reload rescue nil; ready?
       end
     end
-    fog_test_server_destroy
+    clc_test_server_destroy
   end
 end

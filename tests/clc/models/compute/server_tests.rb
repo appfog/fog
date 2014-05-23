@@ -1,36 +1,48 @@
-Shindo.tests("Fog::Compute[:digitalocean] | server model", ['digitalocean', 'compute']) do
+Shindo.tests("Fog::Compute[:clc] | server model", ['clc', 'compute']) do
 
-  server  = fog_test_server
+  server  = clc_test_server
 
   tests('The server model should') do
 
     tests('have the action') do
-      test('reload') { server.respond_to? 'reload' }
       %w{
-        shutdown
         reboot
         power_cycle
         stop
         start
+        reload
       }.each do |action|
         test(action) { server.respond_to? action }
       end
     end
 
     tests('have attributes') do
+      # BJF - why do I need this?
       model_attribute_hash = server.attributes
       attributes = [
         :id,
+        :hardware_group_id,
         :name,
+        :description,
+        :dns_name,
+        :cpu_count,
+        :gb_memory,
+        :disk_count,
+        :total_disk_space_gb,
+        :is_template,
+        :is_hyperscale,
         :state,
-        :backups_active,
-        :public_ip_address,
-        :private_ip_address,
-        :flavor_id,
-        :region_id,
-        :image_id,
-        :created_at,
-        :ssh_keys=
+        :server_type,
+        :service_level,
+        :os_id,
+        :power_state,
+        :maintenance_mode_flag,
+        :location,
+        :primary_ip_address,
+        :ip_addresses,
+        :custom_fields,
+        :modified_by,
+        :modified_date,
       ]
       tests("The server model should respond to") do
         attributes.each do |attribute|
@@ -40,41 +52,28 @@ Shindo.tests("Fog::Compute[:digitalocean] | server model", ['digitalocean', 'com
     end
 
     test('#reboot') do
-      pending if Fog.mocking?
       server.reboot
-      server.wait_for { server.state == 'off' }
-      server.state == 'off'
+      server.wait_for { server.power_state == 'Started' }
+      server.power_state == 'Started'
     end
 
     test('#power_cycle') do
-      pending if Fog.mocking?
       server.wait_for { server.ready? }
       server.power_cycle
-      server.wait_for { server.state == 'off' }
-      server.state == 'off'
+      server.wait_for { server.power_state == 'Started' }
+      server.power_state == 'Started'
     end
 
     test('#stop') do
       server.stop
-      server.wait_for { server.state == 'off' }
-      server.state == 'off'
+      server.wait_for { server.power_state == 'Stopped' }
+      server.power_state == 'Stopped'
     end
 
     test('#start') do
       server.start
       server.wait_for { ready? }
       server.ready?
-    end
-
-    # DigitalOcean shutdown is unreliable
-    # so disable it in real mode for now
-    test('#shutdown') do
-      pending unless Fog.mocking?
-      server.start
-      server.wait_for { server.ready? }
-      server.shutdown
-      server.wait_for { server.state == 'off' }
-      server.state == 'off'
     end
 
     test('#update') do

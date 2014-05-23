@@ -1,6 +1,6 @@
-# 1.10.1 2013/04/04
+# 0.0.1
 
-* Initial release
+* Work in progress
 
-  Getting started example: https://github.com/fog/fog/blob/master/lib/fog/digitalocean/examples/getting_started.md
+  Getting started example: A link would be nice here
 

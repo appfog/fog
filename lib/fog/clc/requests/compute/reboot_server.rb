@@ -1,13 +1,18 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
-        def reboot_server( id )
+        def reboot_server( name )
+          # BJF: Build the request
+          # {
+          #   "Name": "<name>"
+          # }
+          requires :name
           request(
             :expects  => [200],
-            :method   => 'GET',
-            :path     => "droplets/#{id}/reboot"
+            :method   => 'POST',
+            :path     => "REST/Server/RebootServer/json"
           )
         end
 
@@ -15,14 +20,16 @@ module Fog
 
       class Mock
 
-        def reboot_server( id )
+        def reboot_server( name )
           response = Excon::Response.new
           response.status = 200
-          server = self.data[:servers].find { |s| s['id'] == id }
-          server['status'] = 'off' if server
+          server = self.data[:servers].find { |s| s['name'] == name }
+          server['power_state'] = 'Started' if server
           response.body = {
-            "event_id" => Fog::Mock.random_numbers(1).to_i,
-            "status" => "OK"
+            "RequestID" => Fog::Mock.random_numbers(1).to_i,
+            "StatusCode" => 0,
+            "Message" => "Success",
+            "Success" => true,
           }
           response
         end

@@ -1,10 +1,10 @@
-class DigitalOcean < Fog::Bin
+class CLC < Fog::Bin
   class << self
 
     def class_for(key)
       case key
       when :compute
-        Fog::Compute::DigitalOcean
+        Fog::Compute::CLC
       else
         raise ArgumentError, "Unsupported #{self} service: #{key}"
       end
@@ -14,8 +14,8 @@ class DigitalOcean < Fog::Bin
       @@connections ||= Hash.new do |hash, key|
         hash[key] = case key
         when :compute
-          Fog::Logger.warning("DigitalOcean[:compute] is not recommended, use Compute[:digitalocean] for portability")
-          Fog::Compute.new(:provider => 'DigitalOcean')
+          Fog::Logger.warning("CLC[:compute] is not recommended, use Compute[:clc] for portability")
+          Fog::Compute.new(:provider => 'CLC')
         else
           raise ArgumentError, "Unrecognized service: #{key.inspect}"
         end
@@ -24,7 +24,7 @@ class DigitalOcean < Fog::Bin
     end
 
     def services
-      Fog::DigitalOcean.services
+      Fog::CLC.services
     end
 
   end

@@ -1,13 +1,14 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
-        def power_on_server( id )
+        def power_on_server( name )
+          # BJF: Build json here
           request(
             :expects  => [200],
-            :method   => 'GET',
-            :path     => "droplets/#{id}/power_on"
+            :method   => 'POST',
+            :path     => "REST/Server/PowerOnServer/json"
           )
         end
 
@@ -15,14 +16,16 @@ module Fog
 
       class Mock
 
-        def power_on_server( id )
+        def power_on_server( name )
           response = Excon::Response.new
           response.status = 200
-          server = self.data[:servers].find { |s| s['id'] }
-          server['status'] = 'active' if server
+          server = self.data[:servers].find { |s| s['name'] }
+          server['power_state'] = 'Started' if server
           response.body = {
-            "event_id" => Fog::Mock.random_numbers(1).to_i,
-            "status" => "OK"
+            "RequestID" => Fog::Mock.random_numbers(1).to_i,
+            "StatusCode" => 0,
+            "Message" => "Success",
+            "Success" => true,
           }
           response
         end

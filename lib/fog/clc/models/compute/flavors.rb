@@ -1,12 +1,12 @@
 require 'fog/core/collection'
-require 'fog/digitalocean/models/compute/flavor'
+require 'fog/clc/models/compute/flavor'
 
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
 
       class Flavors < Fog::Collection
-        model Fog::Compute::DigitalOcean::Flavor
+        model Fog::Compute::CLC::Flavor
 
         def all
           load service.list_flavors.body['sizes']

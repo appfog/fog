@@ -1,6 +1,6 @@
-Shindo.tests("Fog::Compute[:digitalocean] | image model", ['digitalocean', 'compute']) do
+Shindo.tests("Fog::Compute[:clc] | image model", ['clc', 'compute']) do
 
-  service = Fog::Compute[:digitalocean]
+  service = Fog::Compute[:clc]
   image  = service.images.first
 
   tests('The image model should') do
@@ -11,8 +11,7 @@ Shindo.tests("Fog::Compute[:digitalocean] | image model", ['digitalocean', 'comp
       model_attribute_hash = image.attributes
       attributes = [
         :id,
-        :name,
-        :distribution
+        :name
       ]
       tests("The image model should respond to") do
         attributes.each do |attribute|

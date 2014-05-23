@@ -1,13 +1,17 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
-        def power_off_server( id )
+        def power_off_server( name )
+          # BJF - need to build body here
+          # {
+          #   "Name": "<name>"
+          # }
           request(
             :expects  => [200],
-            :method   => 'GET',
-            :path     => "droplets/#{id}/power_off"
+            :method   => 'POST',
+            :path     => "REST/Server/PowerOffServer/json"
           )
         end
 
@@ -19,10 +23,12 @@ module Fog
           response = Excon::Response.new
           response.status = 200
           server = self.data[:servers].find { |s| s['id'] }
-          server['status'] = 'off' if server
+          server['power_state'] = 'Stopped' if server
           response.body = {
-            "event_id" => Fog::Mock.random_numbers(1).to_i,
-            "status" => "OK"
+            "RequestID" => Fog::Mock.random_numbers(1).to_i,
+            "StatusCode" => 0,
+            "Message" => "Success",
+            "Success" => true,
           }
           response
         end

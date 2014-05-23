@@ -1,12 +1,12 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
         #
         # Delete a SSH public key from your account
         #
-        # @see https://www.digitalocean.com/api#ssh_keys
+        # @see https://www.clc.com/api#ssh_keys
         #
         def destroy_ssh_key(id)
           request(

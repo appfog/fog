@@ -1,9 +1,9 @@
-Shindo.tests('Fog::Compute[:digitalocean] | servers collection', ['digitalocean']) do
-  service = Fog::Compute[:digitalocean]
+Shindo.tests('Fog::Compute[:clc] | servers collection', ['clc']) do
+  service = Fog::Compute[:clc]
 
   options = {
-    :name => "#{fog_server_name}-#{Time.now.to_i.to_s}"
-  }.merge fog_test_server_attributes
+    :name => "#{clc_server_name}-#{Time.now.to_i.to_s}"
+  }.merge clc_set_test_server_attributes
 
   public_key_path = File.join(File.dirname(__FILE__), '../../fixtures/id_rsa.pub')
   private_key_path = File.join(File.dirname(__FILE__), '../../fixtures/id_rsa')
@@ -15,6 +15,7 @@ Shindo.tests('Fog::Compute[:digitalocean] | servers collection', ['digitalocean'
     @instance.wait_for { ready? }
   end
 
+  # BJF: Not applicable?
   tests("#bootstrap with public/private_key_path").succeeds do
     pending if Fog.mocking?
     @server = service.servers.bootstrap({
@@ -24,6 +25,7 @@ Shindo.tests('Fog::Compute[:digitalocean] | servers collection', ['digitalocean'
     @server.destroy
   end
 
+  # BJF: Not applicable?
   tests("#bootstrap with public/private_key").succeeds do
     pending if Fog.mocking?
     @server = service.servers.bootstrap({
@@ -33,6 +35,7 @@ Shindo.tests('Fog::Compute[:digitalocean] | servers collection', ['digitalocean'
     @server.destroy
   end
 
+  # BJF: Not applicable?
   tests("#bootstrap with no public/private keys") do
     raises(ArgumentError, 'raises ArgumentError') { service.servers.bootstrap(options) }
   end

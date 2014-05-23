@@ -1,10 +1,10 @@
 # Getting started: the compute service
 
-You'll need a DigitalOcean account and API key to use this provider.
+You'll need a CLC account and API key to use this provider.
 
-Get one from http://www.digitalocean.com.
+Get one from http://www.digitalclc.com.
 
-To generate the API key, login to the DigitalOcean web panel and go to
+To generate the API key, login to the CLC web panel and go to
 'My Settings -> API Access -> Generate a new API key'.
 
 Write down the Client Key and API Key, you'll need both to use the service.
@@ -13,19 +13,19 @@ Write down the Client Key and API Key, you'll need both to use the service.
 ## Connecting, retrieving and managing server objects
 
 Before we start, I guess it will be useful to the reader to know
-that Fog servers are 'droplets' in DigitalOcean's parlance.
+that Fog servers are 'droplets' in CLC's parlance.
 'Server' is the Fog way to name VMs, and we have
-respected that in the DigitalOcean's Fog provider.
+respected that in the CLC's Fog provider.
 
 First, create a connection to the host:
 
 ```ruby
 require 'fog'
 
-docean = Fog::Compute.new({
-  :provider => 'DigitalOcean',
-  :digitalocean_api_key   => 'poiuweoruwoeiuroiwuer', # your API key here
-  :digitalocean_client_id => 'lkjasoidfuoiu'          # your client key here
+dclc = Fog::Compute.new({
+  :provider => 'CLC',
+  :digitalclc_api_key   => 'poiuweoruwoeiuroiwuer', # your API key here
+  :digitalclc_client_id => 'lkjasoidfuoiu'          # your client key here
 })
 ```
 
@@ -34,14 +34,14 @@ docean = Fog::Compute.new({
 Listing servers and attributes:
 
 ```ruby
-docean.servers.each do |server|
+dclc.servers.each do |server|
   # remember, servers are droplets
   server.id
   server.name
   server.state
   server.backups_enabled
   server.image_id
-  server.flavor_id # server 'size' in DigitalOcean's API parlance
+  server.flavor_id # server 'size' in CLC's API parlance
   server.region_id
 end
 ```
@@ -51,13 +51,13 @@ end
 Creating a new server (droplet):
 
 ```ruby
-server = docean.servers.create :name => 'foobar',
+server = dclc.servers.create :name => 'foobar',
                                # use the first image listed
-                               :image_id  => docean.images.first.id,
+                               :image_id  => dclc.images.first.id,
                                # use the first flavor listed
-                               :flavor_id => docean.flavors.first.id,
+                               :flavor_id => dclc.flavors.first.id,
                                # use the first region listed
-                               :region_id => docean.regions.first.id
+                               :region_id => dclc.regions.first.id
 ```
 
 The server is automatically started after that.
@@ -66,18 +66,18 @@ We didn't pay attention when choosing the flavor, image and region used
 but you can easily list them too, and then decide:
 
 ```ruby
-docean.images.each do |image|
+dclc.images.each do |image|
   image.id
   image.name
   image.distribution
 end
 
-docean.flavors.each do |flavor|
+dclc.flavors.each do |flavor|
   flavor.id
   flavor.name
 end
 
-docean.regions.each do |region|
+dclc.regions.each do |region|
   region.id
   region.name
 end
@@ -87,7 +87,7 @@ end
 Rebooting a server:
 
 ```ruby
-server = docean.servers.first
+server = dclc.servers.first
 server.reboot
 ```
 

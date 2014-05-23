@@ -1,6 +1,6 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
         def list_regions(options = {})

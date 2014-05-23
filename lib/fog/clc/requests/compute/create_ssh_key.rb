@@ -1,6 +1,6 @@
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
       class Real
 
         def create_ssh_key( name, pub_key )

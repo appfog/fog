@@ -1,48 +1,54 @@
 require 'fog/compute/models/server'
 
+# TODO: Fix all of the docs
+
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
 
-      # A DigitalOcean Droplet
+      # A CLC Server
       #
       class Server < Fog::Compute::Server
 
         identity  :id
-        attribute :name
-        attribute :state, :aliases => 'status'
-        attribute :image_id
-        attribute :region_id
-        attribute :flavor_id, :aliases => 'size_id'
-        # Not documented in their API, but
-        # available nevertheless
-        attribute :public_ip_address, :aliases => 'ip_address'
-        attribute :private_ip_address
-        attribute :backups_active
-        attribute :created_at
-
-        attr_writer :ssh_keys
-
-        # Deprecated: Use public_ip_address instead.
-        def ip_address
-          Fog::Logger.warning("ip_address has been deprecated. Use public_ip_address instead")
-          public_ip_address
-        end
+        attribute :hardware_group_id
+        attribute  :name, aliases => 'alias'
+        attribute :description
+        attribute :dns_name
+        attribute :cpu_count
+        attribute :gb_memory
+        attribute :disk_count
+        attribute :total_disk_space_gb
+        attribute :is_template
+        attribute :is_hyperscale
+        attribute :state, aliases => 'status'
+        attribute :server_type
+        attribute :service_level
+        attribute :os_id
+        attribute :power_state
+        attribute :maintenance_mode_flag
+        attribute :location
+        attribute :primary_ip_address
+        attribute :ip_addresses
+        attribute :custom_fields
+        attribute :template
+        attribute :modified_by
+        attribute :modified_date
 
         # Reboot the server (soft reboot).
         #
         # The preferred method of rebooting a server.
         def reboot
-          requires :id
-          service.reboot_server self.id
+          requires :name
+          service.reboot_server self.name
         end
 
         # Reboot the server (hard reboot).
         #
         # Powers the server off and then powers it on again.
         def power_cycle
-          requires :id
-          service.power_cycle_server self.id
+          requires :name
+          service.power_cycle_server self.name
         end
 
         # Shutdown the server
@@ -51,11 +57,11 @@ module Fog
         # The server consumes resources while powered off
         # so you are still charged.
         #
-        # @see https://www.digitalocean.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
-        def shutdown
-          requires :id
-          service.shutdown_server self.id
-        end
+        # @see https://www.clc.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
+        #def shutdown
+          #requires :name
+          #service.shutdown_server self.name
+        #end
 
         # Power off the server
         #
@@ -63,10 +69,10 @@ module Fog
         # The server consumes resources while powered off
         # so you are still charged.
         #
-        # @see https://www.digitalocean.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
+        # @see https://www.clc.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
         def stop
-          requires :id
-          service.power_off_server self.id
+          requires :name
+          service.power_off_server self.name
         end
 
         # Power on the server.
@@ -78,69 +84,80 @@ module Fog
         # it is charged for an hour.
         #
         def start
-          requires :id
-          service.power_on_server self.id
+          requires :name
+          service.power_on_server self.name
         end
 
         def setup(credentials = {})
-          requires :ssh_ip_address
-          require 'net/ssh'
+          # BJF Remove me later?
+          # requires :ssh_ip_address
+          #require 'net/ssh'
 
-          commands = [
-            %{mkdir .ssh},
-            %{passwd -l #{username}},
-            %{echo "#{Fog::JSON.encode(Fog::JSON.sanitize(attributes))}" >> ~/attributes.json}
-          ]
-          if public_key
-            commands << %{echo "#{public_key}" >> ~/.ssh/authorized_keys}
-          end
+          #commands = [
+            #%{mkdir .ssh},
+            #%{passwd -l #{username}},
+            #%{echo "#{Fog::JSON.encode(Fog::JSON.sanitize(attributes))}" >> ~/attributes.json}
+          #]
+          #if public_key
+            #commands << %{echo "#{public_key}" >> ~/.ssh/authorized_keys}
+          #end
 
           # wait for aws to be ready
-          wait_for { sshable?(credentials) }
+          #wait_for { sshable?(credentials) }
 
-          Fog::SSH.new(ssh_ip_address, username, credentials).run(commands)
+          #Fog::SSH.new(ssh_ip_address, username, credentials).run(commands)
+          true
+
         end
 
         # Creates the server (not to be called directly).
         #
         # Usually called by Fog::Collection#create
         #
-        #   docean = Fog::Compute.new({
-        #     :provider => 'DigitalOcean',
-        #     :digitalocean_api_key   => 'key-here',      # your API key here
-        #     :digitalocean_client_id => 'client-id-here' # your client key here
+        #   clc = Fog::Compute.new({
+        #     :provider => 'CLC',
+        #     :clc_api_key   => 'key-here',      # your API key here
+        #     :clc_client_id => 'client-id-here' # your client key here
         #   })
-        #   docean.servers.create :name => 'foobar',
+        #   clc.servers.create :name => 'foobar',
         #                     :image_id  => image_id_here,
-        #                     :flavor_id => flavor_id_here,
+        #                     :cpu_count => cpu_count_here,
+        #                     :gb_memory => gb_memeory_here,
         #                     :region_id => region_id_here
         #
         # @return [Boolean]
         def save
           raise Fog::Errors::Error.new('Resaving an existing object may create a duplicate') if persisted?
-          requires :name, :flavor_id, :image_id, :region_id
+          requires :name, :description, :hardware_group_id, :server_type, 
+                   :service_level, :cpu_count, :gb_memory, :template
 
           options = {}
-          if attributes[:ssh_key_ids]
-            options[:ssh_key_ids] = attributes[:ssh_key_ids]
-          elsif @ssh_keys
-            options[:ssh_key_ids] = @ssh_keys.map(&:id)
-          end
+          # BJF: Remove me too?
+          #if attributes[:ssh_key_ids]
+            #options[:ssh_key_ids] = attributes[:ssh_key_ids]
+          #elsif @ssh_keys
+            #options[:ssh_key_ids] = @ssh_keys.map(&:id)
+          #end
 
-          options[:private_networking] = !!attributes[:private_networking]
+          #options[:private_networking] = !!attributes[:private_networking]
 
           data = service.create_server name,
-                                       flavor_id,
-                                       image_id,
-                                       region_id,
+                                       description,
+                                       hardware_group_id,
+                                       server_type,
+                                       service_level,
+                                       cpu_count,
+                                       gb_memory,
+                                       template,
                                        options
+          # BJF: Do I have something comparable here?
           merge_attributes(data.body['droplet'])
           true
         end
 
         # Destroy the server, freeing up the resources.
         #
-        # DigitalOcean will stop charging you for the resources
+        # CLC will stop charging you for the resources
         # the server was using.
         #
         # Once the server has been destroyed, there's no way
@@ -150,14 +167,14 @@ module Fog
         # destroy the server after creating it. If you try to destroy
         # the server too fast, the destroy event may be lost and the
         # server will remain running and consuming resources, so
-        # DigitalOcean will keep charging you.
-        # Double checked this with DigitalOcean staff and confirmed
+        # CLC will keep charging you.
+        # Double checked this with CLC staff and confirmed
         # that it's the way it works right now.
         #
         # Double check the server has been destroyed!
         def destroy
-          requires :id
-          service.destroy_server id
+          requires :name
+          service.destroy_server name
         end
 
         # Checks whether the server status is 'active'.
@@ -168,12 +185,13 @@ module Fog
         #
         # @return [Boolean]
         def ready?
-          state == 'active'
+          # BJF: Pretty sure this should be a constant
+          state == 'Active'
         end
 
-        # DigitalOcean API does not support updating server state
+        # CLC API does not support updating server state
         def update
-          msg = 'DigitalOcean servers do not support updates'
+          msg = 'CLC servers do not support updates'
           raise NotImplementedError.new(msg)
         end
 

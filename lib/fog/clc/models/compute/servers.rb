@@ -1,13 +1,13 @@
 require 'fog/core/collection'
-require 'fog/digitalocean/models/compute/server'
+require 'fog/clc/models/compute/server'
 
 module Fog
   module Compute
-    class DigitalOcean
+    class CLC
 
       class Servers < Fog::Collection
 
-        model Fog::Compute::DigitalOcean::Server
+        model Fog::Compute::CLC::Server
 
         def all(filters = {})
           data = service.list_servers.body['droplets']
@@ -16,6 +16,10 @@ module Fog
 
         def bootstrap(new_attributes = {})
           server = new(new_attributes)
+
+          # BJF: Okay, so the best bet here is probably to compare the mandatory droplet keys
+          #      on digitalocean with the required tier3 keys.  If everything maps, then I've
+          #      got a lot of work to do to capture the required keys.  Yay.
 
           check_keys(new_attributes)
 
@@ -43,6 +47,7 @@ module Fog
         end
 
         def get(id)
+          # BJF: Need something that isn't called droplet
           server = service.get_server_details(id).body['droplet']
           new(server) if server
         rescue Fog::Errors::NotFound

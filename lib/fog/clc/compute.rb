@@ -2,12 +2,12 @@ require 'fog/clc/core'
 
 module Fog
   module Compute
-    class CenturyLinkCloud < Fog::Service
+    class CLC < Fog::Service
 
-      requires     :digitalocean_api_key
-      requires     :digitalocean_client_id
+      requires     :clc_api_key
+      requires     :clc_client_id
 
-      recognizes   :digitalocean_api_url
+      recognizes   :clc_api_url
 
       model_path   'fog/clc/models/compute'
       model        :server
@@ -33,7 +33,6 @@ module Fog
       request      :power_cycle_server
       request      :power_off_server
       request      :power_on_server
-      request      :shutdown_server
       request      :list_ssh_keys
       request      :create_ssh_key
       request      :get_ssh_key
@@ -55,15 +54,15 @@ module Fog
         end
 
         def initialize(options={})
-          @digitalocean_api_key = options[:digitalocean_api_key]
+          @clc_api_key = options[:clc_api_key]
         end
 
         def data
-          self.class.data[@digitalocean_api_key]
+          self.class.data[@clc_api_key]
         end
 
         def reset_data
-          self.class.data.delete(@digitalocean_api_key)
+          self.class.data.delete(@clc_api_key)
         end
 
       end
@@ -71,11 +70,11 @@ module Fog
       class Real
 
         def initialize(options={})
-          @digitalocean_api_key   = options[:digitalocean_api_key]
-          @digitalocean_client_id = options[:digitalocean_client_id]
-          @digitalocean_api_url   = options[:digitalocean_api_url] || \
-                                            "https://api.digitalocean.com"
-          @connection             = Fog::XML::Connection.new(@digitalocean_api_url)
+          @clc_api_key   = options[:clc_api_key]
+          @clc_client_id = options[:clc_client_id]
+          @clc_api_url   = options[:clc_api_url] || \
+                                            "https://api.clc.com"
+          @connection             = Fog::XML::Connection.new(@clc_api_url)
         end
 
         def reload
@@ -84,8 +83,8 @@ module Fog
 
         def request(params)
           params[:query] ||= {}
-          params[:query].merge!(:api_key   => @digitalocean_api_key)
-          params[:query].merge!(:client_id => @digitalocean_client_id)
+          params[:query].merge!(:api_key   => @clc_api_key)
+          params[:query].merge!(:client_id => @clc_client_id)
 
           response = retry_event_lock { parse @connection.request(params) }
 
