@@ -2,7 +2,7 @@ Shindo.tests('Fog::Compute[:clc] | servers collection', ['clc']) do
   service = Fog::Compute[:clc]
 
   options = {
-    :name => "#{clc_server_name}-#{Time.now.to_i.to_s}"
+    :Name => "#{clc_server_name}"
   }.merge clc_set_test_server_attributes
 
   public_key_path = File.join(File.dirname(__FILE__), '../../fixtures/id_rsa.pub')

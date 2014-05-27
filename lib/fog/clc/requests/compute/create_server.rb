@@ -14,18 +14,24 @@ module Fog
                            cpu_count,
                            gb_memory,
                            template,
+                           network,
                            options = {} )
 
-          query_hash = {
-            :name        => name,
-            :description => description,
-            :hardware_group_id => hardware_group_id,
-            :server_type => server_type,
-            :service_level => service_level,
-            :cpu_count => cpu_count,
-            :gb_memory => gb_memory,
-            :template => template,
+          body = {
+            :Alias        => name,
+            :Description => description,
+            :HardwareGroupID => hardware_group_id,
+            :ServerType => server_type,
+            :ServiceLevel => service_level,
+            :Cpu => cpu_count,
+            :MemoryGB => gb_memory,
+            :Template => template,
+            :Network => network,
           }
+
+puts "DEBUG: " + body.inspect
+          body.merge!(options)
+puts "DEBUG(2): " + body.inspect
 
           #if options[:ssh_key_ids]
             #options[:ssh_key_ids]    = options[:ssh_key_ids].join(",") if options[:ssh_key_ids].is_a? Array
@@ -38,7 +44,7 @@ module Fog
             :expects  => [200],
             :method   => 'POST',
             :path     => 'REST/Server/CreateServer/json',
-            :query    => query_hash
+            :body    => Fog::JSON.encode(body)
           )
         end
 
@@ -60,24 +66,22 @@ module Fog
 
           mock_data = {
             "id"                  => Fog::Mock.random_numbers(1).to_i,
-            "hardware_group_id"   => hardware_group_id,
-            "name"                => name,
-            "cpu_count"           => cpu_count,
-            "gb_memory"           => gb_memory,
-            "os_id"               => Fog::Mock.random_numbers(32).to_i,
-            "server_type"         => server_type,
-            "service_level"       => service_level,
-            "ip_address"          => "127.0.0.1",
-            "power_state"         => "Started",
-            "is_template"         => false,
-            "is_hyperscale"       => false,
-            "disk_count"          => Fog::Mock.random_numbers(3).to_i,
-            "total_disk_space_gb" => 1000,
-            "state"               => 'Active',
-            "cpu_count"           => 2,
-            "gb_memory"           => 8,
-            "modified_date"       => Time.now.strftime("%FT%TZ"),
-            "modified_by"         => "MockMaster3000",
+            "HardwareGroupID"   => hardware_group_id,
+            "Name"                => name,
+            "Cpu"           => cpu_count,
+            "MemoryGB"           => gb_memory,
+            "OperatingSystem"               => Fog::Mock.random_numbers(32).to_i,
+            "ServerType"         => server_type,
+            "ServiceLevel"       => service_level,
+            "IPAddress"          => "127.0.0.1",
+            "PowerState"         => "Started",
+            "IsTemplate"         => false,
+            "IsHyperscale"       => false,
+            "DiskCount"          => Fog::Mock.random_numbers(3).to_i,
+            "TotalDiskSpaceGB" => 1000,
+            "Status"               => 'Active',
+            "ModifiedDate"       => Time.now.strftime("%FT%TZ"),
+            "ModifiedBy"         => "MockMaster3000",
           }
 
           # BJF: Pretty sure we're not returning a droplet.  Need to figure this out.

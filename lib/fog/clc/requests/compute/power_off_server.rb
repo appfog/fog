@@ -19,11 +19,11 @@ module Fog
 
       class Mock
 
-        def power_off_server( id )
+        def power_off_server( name )
           response = Excon::Response.new
           response.status = 200
-          server = self.data[:servers].find { |s| s['id'] }
-          server['power_state'] = 'Stopped' if server
+          server = self.data[:servers].find { |s| s['Name'] == name }
+          server['PowerState'] = 'Stopped' if server
           response.body = {
             "RequestID" => Fog::Mock.random_numbers(1).to_i,
             "StatusCode" => 0,

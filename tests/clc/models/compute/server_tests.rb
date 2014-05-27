@@ -21,28 +21,28 @@ Shindo.tests("Fog::Compute[:clc] | server model", ['clc', 'compute']) do
       model_attribute_hash = server.attributes
       attributes = [
         :id,
-        :hardware_group_id,
-        :name,
-        :description,
-        :dns_name,
-        :cpu_count,
-        :gb_memory,
-        :disk_count,
-        :total_disk_space_gb,
-        :is_template,
-        :is_hyperscale,
-        :state,
-        :server_type,
-        :service_level,
-        :os_id,
-        :power_state,
-        :maintenance_mode_flag,
-        :location,
-        :primary_ip_address,
-        :ip_addresses,
-        :custom_fields,
-        :modified_by,
-        :modified_date,
+        :HardwareGroupID,
+        :Name,
+        :Description,
+        :DnsName,
+        :Cpu,
+        :MemoryGB,
+        :DiskCount,
+        :TotalDiskSpaceGB,
+        :IsTemplate,
+        :IsHyperscale,
+        :Status,
+        :ServerType,
+        :ServiceLevel,
+        :OperatingSystem,
+        :PowerState,
+        :InMaintenanceMode,
+        :Location,
+        :IPAddress,
+        :IPAddresses,
+        :CustomFields,
+        :ModifiedBy,
+        :ModifiedDate,
       ]
       tests("The server model should respond to") do
         attributes.each do |attribute|
@@ -53,21 +53,21 @@ Shindo.tests("Fog::Compute[:clc] | server model", ['clc', 'compute']) do
 
     test('#reboot') do
       server.reboot
-      server.wait_for { server.power_state == 'Started' }
-      server.power_state == 'Started'
+      server.wait_for { server.PowerState == 'Started' }
+      server.PowerState == 'Started'
     end
 
     test('#power_cycle') do
       server.wait_for { server.ready? }
       server.power_cycle
-      server.wait_for { server.power_state == 'Started' }
-      server.power_state == 'Started'
+      server.wait_for { server.PowerState == 'Started' }
+      server.PowerState == 'Started'
     end
 
     test('#stop') do
       server.stop
-      server.wait_for { server.power_state == 'Stopped' }
-      server.power_state == 'Stopped'
+      server.wait_for { server.PowerState == 'Stopped' }
+      server.PowerState == 'Stopped'
     end
 
     test('#start') do

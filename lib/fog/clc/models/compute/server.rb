@@ -10,45 +10,47 @@ module Fog
       #
       class Server < Fog::Compute::Server
 
-        identity  :id
-        attribute :hardware_group_id
-        attribute  :name, aliases => 'alias'
-        attribute :description
-        attribute :dns_name
-        attribute :cpu_count
-        attribute :gb_memory
-        attribute :disk_count
-        attribute :total_disk_space_gb
-        attribute :is_template
-        attribute :is_hyperscale
-        attribute :state, aliases => 'status'
-        attribute :server_type
-        attribute :service_level
-        attribute :os_id
-        attribute :power_state
-        attribute :maintenance_mode_flag
-        attribute :location
-        attribute :primary_ip_address
-        attribute :ip_addresses
-        attribute :custom_fields
-        attribute :template
-        attribute :modified_by
-        attribute :modified_date
+        identity  :id, aliases => 'ID'
+        attribute :HardwareGroupID
+        attribute :Name
+        attribute :Description
+        attribute :DnsName
+        attribute :Cpu
+        attribute :MemoryGB
+        attribute :DiskCount
+        attribute :TotalDiskSpaceGB
+        attribute :IsTemplate
+        attribute :IsHyperscale
+        attribute :Status
+        attribute :ServerType
+        attribute :ServiceLevel
+        attribute :OperatingSystem
+        attribute :PowerState
+        attribute :InMaintenanceMode
+        attribute :Location
+        attribute :IPAddress
+        attribute :IPAddresses
+        attribute :CustomFields
+        attribute :Template
+        attribute :Alias
+        attribute :Network
+        attribute :ModifiedBy
+        attribute :ModifiedDate
 
         # Reboot the server (soft reboot).
         #
         # The preferred method of rebooting a server.
         def reboot
-          requires :name
-          service.reboot_server self.name
+          requires :Name
+          service.reboot_server self.Name
         end
 
         # Reboot the server (hard reboot).
         #
         # Powers the server off and then powers it on again.
         def power_cycle
-          requires :name
-          service.power_cycle_server self.name
+          requires :Name
+          service.power_cycle_server self.Name
         end
 
         # Shutdown the server
@@ -59,7 +61,7 @@ module Fog
         #
         # @see https://www.clc.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
         #def shutdown
-          #requires :name
+          #requires :Name
           #service.shutdown_server self.name
         #end
 
@@ -71,8 +73,8 @@ module Fog
         #
         # @see https://www.clc.com/community/questions/am-i-charged-while-my-droplet-is-in-a-powered-off-state
         def stop
-          requires :name
-          service.power_off_server self.name
+          requires :Name
+          service.power_off_server self.Name
         end
 
         # Power on the server.
@@ -84,8 +86,8 @@ module Fog
         # it is charged for an hour.
         #
         def start
-          requires :name
-          service.power_on_server self.name
+          requires :Name
+          service.power_on_server self.Name
         end
 
         def setup(credentials = {})
@@ -119,36 +121,38 @@ module Fog
         #     :clc_api_key   => 'key-here',      # your API key here
         #     :clc_client_id => 'client-id-here' # your client key here
         #   })
-        #   clc.servers.create :name => 'foobar',
+        #   clc.servers.create :Name => 'foobar',
         #                     :image_id  => image_id_here,
-        #                     :cpu_count => cpu_count_here,
-        #                     :gb_memory => gb_memeory_here,
+        #                     :Cpu => cpu_count_here,
+        #                     :MemoryGB => gb_memeory_here,
         #                     :region_id => region_id_here
         #
         # @return [Boolean]
         def save
           raise Fog::Errors::Error.new('Resaving an existing object may create a duplicate') if persisted?
-          requires :name, :description, :hardware_group_id, :server_type, 
-                   :service_level, :cpu_count, :gb_memory, :template
+          requires :Name, :Description, :HardwareGroupID, :ServerType, 
+                   :ServiceLevel, :Cpu, :MemoryGB, :Template, :Network
 
           options = {}
+          options[:LocationAlias] = self.Location if self.Location
           # BJF: Remove me too?
           #if attributes[:ssh_key_ids]
             #options[:ssh_key_ids] = attributes[:ssh_key_ids]
           #elsif @ssh_keys
-            #options[:ssh_key_ids] = @ssh_keys.map(&:id)
+            #options[:ssh_key_ids] = @ssh_keys.map(&:ID)
           #end
 
           #options[:private_networking] = !!attributes[:private_networking]
 
-          data = service.create_server name,
-                                       description,
-                                       hardware_group_id,
-                                       server_type,
-                                       service_level,
-                                       cpu_count,
-                                       gb_memory,
-                                       template,
+          data = service.create_server self.Name,
+                                       self.Description,
+                                       self.HardwareGroupID,
+                                       self.ServerType,
+                                       self.ServiceLevel,
+                                       self.Cpu,
+                                       self.MemoryGB,
+                                       self.Template,
+                                       self.Network,
                                        options
           # BJF: Do I have something comparable here?
           merge_attributes(data.body['droplet'])
@@ -173,8 +177,8 @@ module Fog
         #
         # Double check the server has been destroyed!
         def destroy
-          requires :name
-          service.destroy_server name
+          requires :Name
+          service.destroy_server self.Name
         end
 
         # Checks whether the server status is 'active'.
@@ -186,7 +190,7 @@ module Fog
         # @return [Boolean]
         def ready?
           # BJF: Pretty sure this should be a constant
-          state == 'Active'
+          self.Status == 'Active'
         end
 
         # CLC API does not support updating server state

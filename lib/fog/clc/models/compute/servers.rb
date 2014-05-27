@@ -46,9 +46,9 @@ module Fog
           server
         end
 
-        def get(id)
+        def get(name)
           # BJF: Need something that isn't called droplet
-          server = service.get_server_details(id).body['droplet']
+          server = service.get_server_details(name).body['droplet']
           new(server) if server
         rescue Fog::Errors::NotFound
           nil

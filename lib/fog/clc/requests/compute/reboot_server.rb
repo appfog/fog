@@ -23,8 +23,8 @@ module Fog
         def reboot_server( name )
           response = Excon::Response.new
           response.status = 200
-          server = self.data[:servers].find { |s| s['name'] == name }
-          server['power_state'] = 'Started' if server
+          server = self.data[:servers].find { |s| s['Name'] == name }
+          server['PowerState'] = 'Started' if server
           response.body = {
             "RequestID" => Fog::Mock.random_numbers(1).to_i,
             "StatusCode" => 0,

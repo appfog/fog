@@ -5,27 +5,19 @@ module Fog
     class CLC < Fog::Service
 
       requires     :clc_api_key
-      requires     :clc_client_id
+      requires     :clc_password
 
       recognizes   :clc_api_url
 
       model_path   'fog/clc/models/compute'
       model        :server
       collection   :servers
-      model        :flavor
-      collection   :flavors
       model        :image
       collection   :images
-      model        :region
-      collection   :regions
-      model        :ssh_key
-      collection   :ssh_keys
 
       request_path 'fog/clc/requests/compute'
       request      :list_servers
       request      :list_images
-      request      :list_regions
-      request      :list_flavors
       request      :get_server_details
       request      :create_server
       request      :destroy_server
@@ -33,18 +25,13 @@ module Fog
       request      :power_cycle_server
       request      :power_off_server
       request      :power_on_server
-      request      :list_ssh_keys
-      request      :create_ssh_key
-      request      :get_ssh_key
-      request      :destroy_ssh_key
 
       class Mock
 
         def self.data
           @data ||= Hash.new do |hash, key|
             hash[key] = {
-              :servers => [],
-              :ssh_keys => []
+              :servers => []
             }
           end
         end
@@ -70,11 +57,29 @@ module Fog
       class Real
 
         def initialize(options={})
+          @clc_cookie    = nil
           @clc_api_key   = options[:clc_api_key]
-          @clc_client_id = options[:clc_client_id]
-          @clc_api_url   = options[:clc_api_url] || \
-                                            "https://api.clc.com"
-          @connection             = Fog::XML::Connection.new(@clc_api_url)
+          @clc_password  = options[:clc_password]
+          @clc_api_url   = options[:clc_api_url] || "https://api.tier3.com"
+          @connection_options = options[:connection_options] || {:read_timeout => 360}
+          @persistent = options[:persistent]  || false
+          @connection    = Fog::XML::Connection.new(@clc_api_url, @persistent, @connection_options)
+          login
+        end
+
+        def login
+          # Let's give a login a shot
+          body = {
+            'APIKey' => @clc_api_key,
+            'Password' => @clc_password
+          }
+          resp = request(
+            :expects  => [200],
+            :method   => 'POST',
+            :path     => 'REST/Auth/Logon',
+            :body     => Fog::JSON.encode(body)
+          )
+          @clc_cookie = resp.headers["set-cookie"]
         end
 
         def reload
@@ -82,15 +87,16 @@ module Fog
         end
 
         def request(params)
-          params[:query] ||= {}
-          params[:query].merge!(:api_key   => @clc_api_key)
-          params[:query].merge!(:client_id => @clc_client_id)
+          params[:headers] ||= {}
+          params[:headers].merge!("Content-Type" => "application/json")
+          params[:headers].merge!("Cookie" => @clc_cookie)
 
           response = retry_event_lock { parse @connection.request(params) }
 
           unless response.body.empty?
-            if response.body['status'] != 'OK'
-              case response.body['error_message']
+            if response.body['Success'] != true
+              case response.body['Message']
+              # TODO: Look for login unsuccessful, etc.
               when /No Droplets Found/
                 raise Fog::Errors::NotFound.new
               else
@@ -111,7 +117,7 @@ module Fog
 
         def retry_event_lock
           count   = 0
-          reponse = nil
+          response = nil
           while count < 5
             response = yield
 
